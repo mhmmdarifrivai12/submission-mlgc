@@ -1,6 +1,6 @@
 const predictClassification = require("../services/inferenceService");
 const crypto = require("crypto");
-const storeData = require("../services/storeData");
+const { storeData, getHistories } = require("../services/storeData");  // Pastikan import ini benar
 
 async function postPredictHandler(request, h) {
   const { image } = request.payload;
@@ -17,6 +17,7 @@ async function postPredictHandler(request, h) {
     createdAt: createdAt,
   };
 
+  // Menyimpan data prediksi
   await storeData(id, data);
 
   const response = h.response({
@@ -28,4 +29,20 @@ async function postPredictHandler(request, h) {
   return response;
 }
 
-module.exports = { postPredictHandler };
+// Handler untuk mengambil riwayat prediksi
+async function getHistoriesHandler(request, h) {
+  try {
+    const histories = await getHistories();  // Mengambil seluruh riwayat prediksi
+    return h.response({
+      status: "success",
+      data: histories,
+    }).code(200);
+  } catch (error) {
+    return h.response({
+      status: "fail",
+      message: "Gagal mengambil riwayat prediksi",
+    }).code(500);
+  }
+}
+
+module.exports = { postPredictHandler, getHistoriesHandler };
